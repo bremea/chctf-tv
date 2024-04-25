@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+	font-family: 'DosFont';
+	src:
+		url('dosfont-webfont.woff2') format('woff2'),
+		url('dosfont-webfont.woff') format('woff');
+	font-weight: normal;
+	font-style: normal;
+}
+
+* {
+	font-family: 'DosFont', 'Courier New', Courier, monospace;
+	color: white;
+	overflow:hidden;
+}
+
+.special-red {
+	color: #C4112F;
+}
+
+body, html {
+	background: black;
+}
