@@ -21,6 +21,10 @@
 	color: #C4112F;
 }
 
+.shadow-red {
+	text-shadow: #C4112F 0 0 12px;
+}
+
 body, html {
 	background: black;
 }
