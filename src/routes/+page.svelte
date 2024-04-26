@@ -1,10 +1,12 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
 
 	let table: string[][] = [];
 
 	const randomChars = '!@#$%^&*abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 	const end = new Date('04/27/2024 2:00 PM');
+	let iframe: HTMLIFrameElement;
 	const sponsors = [
 		'https://chctf.com/files/sponsors/Brown_Advisory.jpg',
 		'https://chctf.com/files/sponsors/Sophos.png',
@@ -27,11 +29,18 @@
 		}
 	}
 
+	onMount(() => {
+		iframe.addEventListener('load', () => {
+			console.log(iframe.contentDocument);
+			iframe.contentDocument!.body.style.overflowY = 'hidden';
+		});
+	});
+
 	setInterval(() => {
 		let x = Math.floor(Math.random() * table[0].length);
 		let y = Math.floor(Math.random() * table.length);
 		runAnimation(x, y);
-	}, 100);
+	}, 50);
 
 	const runAnimation = async (x: number, y: number) => {
 		let animlength = Math.floor(Math.random() * (50 - 25) + 25);
@@ -71,7 +80,12 @@
 			.padStart(2, '0')} . {millisecondsLeft.toString().slice(0, 2).padStart(2, '0')}
 	</p>
 	<div class="bg-black w-1/2 h-96 flex items-center justify-center">
-		<p class="opacity-25 text-xl">[scoreboard]</p>
+		<iframe
+			src="https://chctf.com/scoreboard"
+			class="w-full h-full"
+			title="chctf"
+			bind:this={iframe}
+		></iframe>
 	</div>
 	<div class="h-[156px] w-[935px] flex justify-center relative">
 		{#each sponsors as sponsor, i}
@@ -89,5 +103,5 @@
 </div>
 
 {#each table as str}
-	<p class="text-2xl tracking-widest opacity-15">{str.join('')}</p>
+	<p class="text-2xl tracking-widest opacity-25">{str.join('')}</p>
 {/each}
