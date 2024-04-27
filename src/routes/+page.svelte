@@ -6,7 +6,8 @@
 
 	const randomChars = '!@#$%^&*abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 	const end = new Date('04/27/2024 2:00 PM');
-	let iframe: HTMLIFrameElement;
+	let scoreboard: HTMLDivElement;
+	let scoreTable: HTMLTableElement;
 	const sponsors = [
 		'https://chctf.com/files/sponsors/Brown_Advisory.jpg',
 		'https://chctf.com/files/sponsors/Sophos.png',
@@ -21,26 +22,67 @@
 	let secondsLeft: number = 0;
 	let minutesLeft: number = 0;
 	let hoursLeft: number = 0;
+	let tableOpacity: number = 0;
+	let now = new Date();
 
-	for (let y = 0; y < visualViewport?.height! / 29.15; y++) {
-		table[y] = [];
-		for (let x = 0; x < visualViewport?.width! / 13.25; x++) {
-			table[y][x] = '.';
-		}
-	}
+	let scores: { name: string; score: number }[] = [];
 
 	onMount(() => {
-		iframe.addEventListener('load', () => {
-			console.log(iframe.contentDocument);
-			iframe.contentDocument!.body.style.overflowY = 'hidden';
-		});
+		for (let y = 0; y < visualViewport?.height! / 29.15; y++) {
+			table[y] = [];
+			for (let x = 0; x < visualViewport?.width! / 13.25; x++) {
+				table[y][x] = '.';
+			}
+		}
+
+		setInterval(() => {
+			let x = Math.floor(Math.random() * table[0].length);
+			let y = Math.floor(Math.random() * table.length);
+			runAnimation(x, y);
+		}, 50);
+
+		runScoreboard();
 	});
 
-	setInterval(() => {
-		let x = Math.floor(Math.random() * table[0].length);
-		let y = Math.floor(Math.random() * table.length);
-		runAnimation(x, y);
-	}, 50);
+	const fetchScores = async () => {
+		const req = await fetch('/scores');
+		scores = (await req.json()).data;
+	};
+
+	const runScoreboard = async () => {
+		scoreboard.scrollTo(0, 0);
+		tableOpacity = 0;
+		scoreTable.style.opacity = tableOpacity.toString();
+
+		await fetchScores();
+
+		while (tableOpacity < 1) {
+			tableOpacity = tableOpacity + 0.05;
+			scoreTable.style.opacity = tableOpacity.toString();
+			await sleep(30);
+		}
+		tableOpacity = 1;
+		scoreTable.style.opacity = tableOpacity.toString();
+
+		await sleep(5000);
+
+		while (scoreboard.scrollTop < scoreboard.scrollHeight - scoreboard.clientHeight) {
+			scoreboard.scrollTo(0, scoreboard.scrollTop + 1);
+			await sleep(30);
+		}
+
+		await sleep(5000);
+
+		while (tableOpacity > 0) {
+			tableOpacity = tableOpacity - 0.05;
+			scoreTable.style.opacity = tableOpacity.toString();
+			await sleep(30);
+		}
+		tableOpacity = 0;
+		scoreTable.style.opacity = tableOpacity.toString();
+
+		runScoreboard();
+	};
 
 	const runAnimation = async (x: number, y: number) => {
 		let animlength = Math.floor(Math.random() * (50 - 25) + 25);
@@ -63,7 +105,7 @@
 	}, 5000);
 
 	setInterval(() => {
-		const now = new Date();
+		now = new Date();
 		const differenceInMilliseconds = end.getTime() - now.getTime();
 
 		hoursLeft = Math.floor(differenceInMilliseconds / (1000 * 60 * 60));
@@ -74,18 +116,30 @@
 </script>
 
 <div class="fixed z-10 w-full h-full flex flex-col justify-around items-center">
-	<p class="shadow-red text-4xl tracking-widest opacity-100 special-red bg-black px-24 py-6">
-		{hoursLeft.toString().padStart(2, '0')} : {minutesLeft.toString().padStart(2, '0')} : {secondsLeft
-			.toString()
-			.padStart(2, '0')} . {millisecondsLeft.toString().slice(0, 2).padStart(2, '0')}
-	</p>
-	<div class="bg-black w-1/2 h-96 flex items-center justify-center">
-		<iframe
-			src="https://chctf.com/scoreboard"
-			class="w-full h-full"
-			title="chctf"
-			bind:this={iframe}
-		></iframe>
+	{#if now > new Date('4/27/2024 10:00 AM')}
+		<p class="shadow-red text-6xl tracking-widest opacity-100 special-red bg-black px-12 py-4">
+			{hoursLeft.toString().padStart(2, '0')} : {minutesLeft.toString().padStart(2, '0')} : {secondsLeft
+				.toString()
+				.padStart(2, '0')} . {millisecondsLeft.toString().slice(0, 2).padStart(2, '0')}
+		</p>
+	{:else}
+		<p class="shadow-red text-6xl tracking-widest opacity-100 special-red bg-black px-12 py-4">
+			STARTING SOON...
+		</p>
+	{/if}
+	<div
+		class="bg-black w-1/2 flex justify-center px-8 py-4 h-64 overflow-y-hidden"
+		bind:this={scoreboard}
+	>
+		<table class="text-2xl w-full align-middle" bind:this={scoreTable}>
+			{#each scores as score, i}
+				<tr>
+					<td class="special-red">{i + 1}</td>
+					<td>{score.name}</td>
+					<td class="text-right">{score.score}</td>
+				</tr>
+			{/each}
+		</table>
 	</div>
 	<div class="h-[156px] w-[935px] flex justify-center relative">
 		{#each sponsors as sponsor, i}
