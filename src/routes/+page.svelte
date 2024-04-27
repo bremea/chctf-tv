@@ -27,7 +27,7 @@
 
 	let scores: { name: string; score: number }[] = [];
 
-	onMount(() => {
+	onMount(async () => {
 		for (let y = 0; y < visualViewport?.height! / 29.15; y++) {
 			table[y] = [];
 			for (let x = 0; x < visualViewport?.width! / 13.25; x++) {
@@ -39,9 +39,11 @@
 			let x = Math.floor(Math.random() * table[0].length);
 			let y = Math.floor(Math.random() * table.length);
 			runAnimation(x, y);
-		}, 50);
+		}, 30);
 
-		runScoreboard();
+		while (true) {
+			await runScoreboard();
+		}
 	});
 
 	const fetchScores = async () => {
@@ -80,12 +82,10 @@
 		}
 		tableOpacity = 0;
 		scoreTable.style.opacity = tableOpacity.toString();
-
-		runScoreboard();
 	};
 
 	const runAnimation = async (x: number, y: number) => {
-		let animlength = Math.floor(Math.random() * (50 - 25) + 25);
+		let animlength = Math.floor(Math.random() * (75 - 5) + 5);
 		for (let i = 0; i < animlength; i++) {
 			table[y][x] = getRandomChar();
 			await sleep(25);
@@ -107,6 +107,13 @@
 	setInterval(() => {
 		now = new Date();
 		const differenceInMilliseconds = end.getTime() - now.getTime();
+		if (differenceInMilliseconds <= 0) {
+			hoursLeft = 0;
+			minutesLeft = 0;
+			secondsLeft = 0;
+			millisecondsLeft = 0;
+			return;
+		}
 
 		hoursLeft = Math.floor(differenceInMilliseconds / (1000 * 60 * 60));
 		minutesLeft = Math.floor((differenceInMilliseconds % (1000 * 60 * 60)) / (1000 * 60));
@@ -131,15 +138,26 @@
 		class="bg-black w-1/2 flex justify-center px-8 py-4 h-64 overflow-y-hidden"
 		bind:this={scoreboard}
 	>
-		<table class="text-2xl w-full align-middle" bind:this={scoreTable}>
-			{#each scores as score, i}
+		{#if scores.length > 0}
+			<table class="text-2xl w-full align-middle" bind:this={scoreTable}>
 				<tr>
-					<td class="special-red">{i + 1}</td>
-					<td>{score.name}</td>
-					<td class="text-right">{score.score}</td>
+					<th class="special-red font-normal">#</th>
+					<th class="special-red font-normal">Team</th>
+					<th class="text-right font-normal special-red">Points</th>
 				</tr>
-			{/each}
-		</table>
+				{#each scores as score, i}
+					<tr>
+						<td class="special-red">{i + 1}</td>
+						<td>{score.name}</td>
+						<td class="text-right">{score.score}</td>
+					</tr>
+				{/each}
+			</table>
+		{:else}
+			<div class="w-full h-full flex items-center justify-center">
+				<p class="opacity-50 text-2xl">No scores yet</p>
+			</div>
+		{/if}
 	</div>
 	<div class="h-[156px] w-[935px] flex justify-center relative">
 		{#each sponsors as sponsor, i}
