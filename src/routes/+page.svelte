@@ -5,7 +5,7 @@
 	let table: string[][] = [];
 
 	const randomChars = '!@#$%^&*abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-	const end = new Date('04/27/2024 2:00 PM');
+	const end = new Date('04/27/2024 1:30 PM');
 	let scoreboard: HTMLDivElement;
 	let scoreTable: HTMLTableElement;
 	const sponsors = [
@@ -138,26 +138,20 @@
 		class="bg-black w-1/2 flex justify-center px-8 py-4 h-64 overflow-y-hidden"
 		bind:this={scoreboard}
 	>
-		{#if scores.length > 0}
-			<table class="text-2xl w-full align-middle" bind:this={scoreTable}>
+		<table class="text-2xl w-full align-middle" bind:this={scoreTable}>
+			<tr>
+				<th class="special-red font-normal">#</th>
+				<th class="special-red font-normal">Team</th>
+				<th class="text-right font-normal special-red">Points</th>
+			</tr>
+			{#each scores as score, i}
 				<tr>
-					<th class="special-red font-normal">#</th>
-					<th class="special-red font-normal">Team</th>
-					<th class="text-right font-normal special-red">Points</th>
+					<td class="special-red">{i + 1}</td>
+					<td>{score.name}</td>
+					<td class="text-right">{score.score}</td>
 				</tr>
-				{#each scores as score, i}
-					<tr>
-						<td class="special-red">{i + 1}</td>
-						<td>{score.name}</td>
-						<td class="text-right">{score.score}</td>
-					</tr>
-				{/each}
-			</table>
-		{:else}
-			<div class="w-full h-full flex items-center justify-center">
-				<p class="opacity-50 text-2xl">No scores yet</p>
-			</div>
-		{/if}
+			{/each}
+		</table>
 	</div>
 	<div class="h-[156px] w-[935px] flex justify-center relative">
 		{#each sponsors as sponsor, i}
